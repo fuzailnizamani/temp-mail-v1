@@ -1,5 +1,3 @@
-Here is a **short, clean, and original README.md** you can safely use:
-
 ````md
 # 📨 Disposable Email Generator
 
