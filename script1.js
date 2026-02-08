@@ -2,15 +2,35 @@ let account = null;
 let token = null;
 let inboxInterval = null;
 
-// The base URL of your Node.js backend
-const API_BASE = "http://localhost:5000/api";
-
 async function generateAccount() {
   try {
-    // 1. Call your own Generate API
-    const res = await fetch(`${API_BASE}/inbox/generate`, {
+    const username = Math.random().toString(36).substring(2, 10);
+
+    // Get domains
+    const domainRes = await fetch("https://api.mail.tm/domains");
+    if (!domainRes.ok) {
+      showAlert("Failed to fetch email domains. Please try again.");
+      return;
+    }
+
+    const domainData = await domainRes.json();
+    if (
+      !domainData["hydra:member"] ||
+      domainData["hydra:member"].length === 0
+    ) {
+      showAlert("No email domains available. Please try again later.");
+      return;
+    }
+
+    const domain = domainData["hydra:member"][0].domain;
+    const address = `${username}@${domain}`;
+    const password = "password123";
+
+    // Create account
+    const res = await fetch("https://api.mail.tm/accounts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, password }),
     });
 
     if (!res.ok) {
@@ -18,18 +38,27 @@ async function generateAccount() {
       return;
     }
 
-    const data = await res.json();
-    
-    // 2. Map data to your local variables
-    account = { address: data.email };
-    token = data.token; // Your backend secret token
-
-    // 3. Update UI and LocalStorage
-    document.getElementById("emailDisplay").innerText = account.address;
+    account = { address, password };
+    document.getElementById("emailDisplay").innerText = address;
     localStorage.setItem("tm_account", JSON.stringify(account));
+
+    // Login
+    const loginRes = await fetch("https://api.mail.tm/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, password }),
+    });
+
+    if (!loginRes.ok) {
+      showAlert("Account created but failed to login. Please try again.");
+      return;
+    }
+
+    const loginData = await loginRes.json();
+    token = loginData.token;
     localStorage.setItem("tm_token", token);
 
-    // 4. Start polling inbox
+    // Start polling inbox
     if (inboxInterval) clearInterval(inboxInterval);
     checkInbox();
     inboxInterval = setInterval(checkInbox, 5000);
@@ -110,158 +139,172 @@ function markMessageAsRead(messageId) {
 }
 
 async function checkInbox() {
-  // Use account address from global variable or localStorage
-  if (!account) return;
+  if (!token) return;
 
-  try {
-    // Call your own Fetch All Emails API
-    const res = await fetch(`${API_BASE}/emails/${account.address}`);
+  const inboxRes = await fetch("https://api.mail.tm/messages", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const inboxData = await inboxRes.json();
+  const messages = inboxData["hydra:member"];
+
+  const inbox = document.getElementById("inbox");
+
+  // Only clear the inbox if there are no messages
+  if (messages.length === 0) {
+    inbox.innerHTML = "<p>No messages yet.</p>";
+    return;
+  }
+
+  // Check if we need to update the inbox
+  const existingMessages = inbox.querySelectorAll(".message");
+  if (existingMessages.length === messages.length) {
+    // Same number of messages, no need to refresh
+    return;
+  }
+
+  // Clear and rebuild inbox only if message count changed
+  inbox.innerHTML = "";
+
+  const readMessages = getReadMessages();
+
+  for (let msg of messages) {
+    // Format the received date
+    const receivedDate = new Date(msg.createdAt);
+    const formattedDate = receivedDate.toLocaleString();
     
-    if (!res.ok) return;
-
-    const messages = await res.json(); // Your backend returns a direct array
-    const inbox = document.getElementById("inbox");
-
-    if (messages.length === 0) {
-      inbox.innerHTML = "<p>No messages yet.</p>";
-      return;
-    }
-
-    // Check if we need to update the UI
-    const existingMessages = inbox.querySelectorAll(".message");
-    if (existingMessages.length === messages.length) return;
-
-    inbox.innerHTML = "";
-    const readMessages = getReadMessages();
-
-    messages.forEach(msg => {
-      const messageDiv = document.createElement("div");
-      messageDiv.classList.add("message");
-      
-      // Check if message is read using MongoDB _id
-      const isRead = readMessages.includes(msg._id);
-      messageDiv.classList.add(isRead ? "read" : "unread");
-      messageDiv.dataset.messageId = msg._id;
-      
-      messageDiv.innerHTML = `
-        <div class="message-header">
-          <strong>From:</strong> ${msg.from}<br>
-          <strong>Subject:</strong> ${msg.subject}<br>
-          <strong>Time:</strong> ${new Date(msg.receivedAt).toLocaleString()}<br>
-        </div>
-      `;
-      // Click to show details
-      messageDiv.onclick = () => showMessage(msg._id, messageDiv);
-      inbox.appendChild(messageDiv);
-    });
-  } catch (error) {
-    console.error("Inbox check error:", error);
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message");
+    
+    // Check if message is read (either from API or localStorage)
+    const isRead = msg.hasAttachments || msg.seen || readMessages.includes(msg.id);
+    messageDiv.classList.add(isRead ? "read" : "unread");
+    messageDiv.dataset.messageId = msg.id;
+    
+    messageDiv.innerHTML = `
+      <div class="message-header">
+        <strong>From:</strong> ${msg.from.address}<br>
+        <strong>Subject:</strong> ${msg.subject}<br>
+        <strong>Time:</strong> ${formattedDate}<br>
+        <strong>Preview:</strong> ${msg.intro}
+      </div>
+    `;
+    messageDiv.onclick = () => showMessage(msg.id, messageDiv);
+    inbox.appendChild(messageDiv);
   }
 }
 
 async function showMessage(id, div) {
+  // Mark message as read when opened
   div.classList.remove("unread");
   div.classList.add("read");
   markMessageAsRead(id);
 
+  // Check if message body is already shown
   let bodyDiv = div.querySelector(".message-body");
+
   if (bodyDiv) {
-    bodyDiv.remove();
+    bodyDiv.remove(); // Toggle off
     return;
   }
 
   try {
-    const res = await fetch(`${API_BASE}/emails/detail/${id}`);
-    if (!res.ok) throw new Error("Failed to fetch message");
+    const res = await fetch(`https://api.mail.tm/messages/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch message");
+    }
 
     const data = await res.json();
-    const bodyContent = data.bodyHtml || data.bodyText || "No message content.";
+    const body = data.text || "No message content.";
 
     const newDiv = document.createElement("div");
     newDiv.classList.add("message-body");
 
+    // Create a container for the email content
     const contentDiv = document.createElement("div");
     contentDiv.classList.add("message-content");
-    
-    // Inject the HTML
-    contentDiv.innerHTML = data.bodyHtml ? bodyContent : linkify(bodyContent);
+    contentDiv.innerHTML = linkify(body); // <-- changed from innerText to innerHTML
 
-    // --- NEW: LINK SAFETY LOGIC ---
-    // This finds all links in the email and forces them to open in a new tab
-    const links = contentDiv.querySelectorAll("a");
-    links.forEach(link => {
-        link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noopener noreferrer");
-    });
-    // ------------------------------
-
+    // Create controls for the message
     const controlsDiv = document.createElement("div");
     controlsDiv.classList.add("message-controls");
 
+    // Add a close button
     const closeButton = document.createElement("button");
     closeButton.classList.add("message-close");
     closeButton.innerHTML = '<i class="fas fa-times"></i>';
-    closeButton.onclick = (e) => { e.stopPropagation(); newDiv.remove(); };
+    closeButton.onclick = (e) => {
+      e.stopPropagation(); // Prevent event from bubbling up
+      newDiv.remove();
+    };
 
+    // Add a copy button
     const copyButton = document.createElement("button");
     copyButton.classList.add("message-copy");
     copyButton.innerHTML = '<i class="fas fa-copy"></i>';
     copyButton.onclick = (e) => {
-      e.stopPropagation();
-      navigator.clipboard.writeText(data.bodyText || data.bodyHtml)
-        .then(() => showAlert("Content copied!"))
-        .catch(() => showAlert("Failed to copy"));
+      e.stopPropagation(); // Prevent event from bubbling up
+      navigator.clipboard
+        .writeText(body)
+        .then(() => showAlert("Message content copied to clipboard!"))
+        .catch(() => showAlert("Failed to copy message content"));
     };
 
+    // Add buttons to controls
     controlsDiv.appendChild(copyButton);
     controlsDiv.appendChild(closeButton);
+
+    // Add both content and controls to the message body
     newDiv.appendChild(contentDiv);
     newDiv.appendChild(controlsDiv);
 
-    newDiv.onclick = (e) => e.stopPropagation();
+    // Add click stop propagation to prevent collapse when clicking inside
+    newDiv.onclick = (e) => {
+      e.stopPropagation();
+    };
+
     div.appendChild(newDiv);
   } catch (error) {
-    console.error("Error fetching message detail:", error);
+    console.error("Error fetching message:", error);
     showAlert("Failed to load message content");
   }
 }
 
 async function deleteAccount() {
-  if (!account) {
+  if (!token || !account) {
     showAlert("No active email to delete");
     return;
   }
 
-  try {
-    // Optional: Call your backend DELETE route
-    await fetch(`${API_BASE}/inbox/${account.address}`, { method: 'DELETE' });
+  // Animate delete icon
+  const deleteIcon = document.querySelector(".action-button.delete i");
+  if (deleteIcon) {
+    deleteIcon.classList.remove("icon-animate-delete");
+    void deleteIcon.offsetWidth;
+    deleteIcon.classList.add("icon-animate-delete");
+  }
 
-    // UI Cleanup
-    const deleteIcon = document.querySelector(".action-button.delete i");
-    if (deleteIcon) {
-      deleteIcon.classList.remove("icon-animate-delete");
-      void deleteIcon.offsetWidth;
-      deleteIcon.classList.add("icon-animate-delete");
-    }
+  // Clear the inbox and account info
+  document.getElementById("inbox").innerHTML = "<p>No messages yet.</p>";
+  document.getElementById("emailDisplay").innerText = "---";
+  account = null;
+  token = null;
+  localStorage.removeItem("tm_account");
+  localStorage.removeItem("tm_token");
+  localStorage.removeItem("tm_read_messages"); // Clear read status too
+  
+  showAlert("Email address deleted!");
 
-    document.getElementById("inbox").innerHTML = "<p>No messages yet.</p>";
-    document.getElementById("emailDisplay").innerText = "---";
-    
-    account = null;
-    token = null;
-    localStorage.removeItem("tm_account");
-    localStorage.removeItem("tm_token");
-    localStorage.removeItem("tm_read_messages");
-    
-    if (inboxInterval) {
+  if (inboxInterval) {
       clearInterval(inboxInterval);
       inboxInterval = null;
-    }
-
-    showAlert("Email address deleted!");
-  } catch (error) {
-    console.error("Delete error:", error);
-    showAlert("Failed to delete account from server.");
   }
 }
 

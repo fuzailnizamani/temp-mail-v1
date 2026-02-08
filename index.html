@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Real Temp Mail</title>
+    <title>Correo Temporal Real</title>
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -18,10 +18,10 @@
         </div>
         <nav class="main-nav">
           <ul>
-            <li><a href="#home" class="active">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#how-to-use">How to Use</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#home" class="active">Inicio</a></li>
+            <li><a href="#about">Nosotros</a></li>
+            <li><a href="#how-to-use">Cómo Usar</a></li>
+            <li><a href="#contact">Contacto</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn">
@@ -36,21 +36,21 @@
         <button class="alert-close" onclick="closeAlert()">×</button>
       </div>
       <div class="section" id="home">
-        <h1><i class="fas fa-envelope-open-text"></i> Temp Mail Generator</h1>
+        <h1><i class="fas fa-envelope-open-text"></i> Generador de Correo Temporal</h1>
 
         <div class="email-generator">
           <button onclick="generateAccount()" class="generate-button">
-            <i class="fas fa-random"></i> Generate Temp Email
+            <i class="fas fa-random"></i> Generar Correo Temporal
           </button>
 
           <div class="email-box">
-            <label>Your Temp Email:</label>
+            <label>Tu Correo Temporal:</label>
             <div class="email-display">
               <span id="emailDisplay">---</span>
               <button
                 onclick="copyEmail()"
                 class="icon-button"
-                title="Copy Email"
+                title="Copiar Correo"
               >
                 <i class="fas fa-copy"></i>
               </button>
@@ -62,184 +62,159 @@
       <div class="button-section">
         <button class="action-button copy" onclick="copyEmail()">
           <i class="fas fa-copy"></i>
-          Copy
+          Copiar
         </button>
         <button class="action-button refresh" onclick="manualRefresh()">
           <i class="fas fa-sync-alt" id="refreshIcon"></i>
-          Refresh
+          Actualizar
         </button>
         <button class="action-button delete" onclick="deleteAccount()">
           <i class="fas fa-trash"></i>
-          Delete
+          Eliminar
         </button>
       </div>
 
       <div id="service" class="section">
         <div class="inbox-container">
           <div class="inbox-header">
-            <h2><i class="fas fa-inbox"></i> Inbox</h2>
+            <h2><i class="fas fa-inbox"></i> Bandeja de Entrada</h2>
             <button
               onclick="manualRefresh()"
               class="icon-button"
-              title="Refresh Inbox"
+              title="Actualizar Bandeja"
             >
               <i id="refreshIcon" class="fas fa-sync-alt"></i>
             </button>
           </div>
 
           <div id="inbox" class="inbox">
-            <p>No messages yet.</p>
+            <p>No hay mensajes aún.</p>
           </div>
         </div>
       </div>
 
       <div id="about" class="section info-section">
         <h2>
-          <i class="fas fa-info-circle"></i> Understanding Temporary Email
+          <i class="fas fa-info-circle"></i> Entendiendo el Correo Temporal
         </h2>
 
         <div class="info-content">
-          <h3>What is Temporary E-mail?</h3>
+          <h3>¿Qué es el Correo Temporal?</h3>
           <p>
-            In today's digital world, almost every online service requires an
-            email address for registration. While essential, this often leads to
-            unwanted spam and privacy concerns. Our temporary email service
-            provides a simple solution - instant, disposable email addresses
-            that protect your primary inbox.
+            En el mundo digital actual, casi todos los servicios en línea requieren una 
+            dirección de correo para registrarse. Aunque es esencial, esto a menudo conduce a 
+            spam no deseado y problemas de privacidad. Nuestro servicio de correo temporal 
+            ofrece una solución simple: direcciones de correo instantáneas y desechables 
+            que protegen tu bandeja de entrada principal.
           </p>
 
           <div class="features-grid">
             <div class="feature-card">
               <i class="fas fa-bolt"></i>
-              <h4>Instant Generation</h4>
+              <h4>Generación Instantánea</h4>
               <p>
-                Create a new temporary email address with just one click - no
-                registration required.
+                Crea una nueva dirección de correo temporal con un solo clic, sin 
+                necesidad de registro.
               </p>
             </div>
 
             <div class="feature-card">
               <i class="fas fa-copy"></i>
-              <h4>Easy Copy</h4>
+              <h4>Copia Fácil</h4>
               <p>
-                Copy your temporary email address to clipboard instantly with
-                our convenient copy button.
+                Copia tu dirección de correo temporal al portapapeles al instante con 
+                nuestro conveniente botón de copia.
               </p>
             </div>
 
             <div class="feature-card">
               <i class="fas fa-sync-alt"></i>
-              <h4>Auto Refresh</h4>
+              <h4>Auto Actualización</h4>
               <p>
-                Inbox automatically refreshes every 5 seconds to show new
-                messages instantly.
+                La bandeja de entrada se actualiza automáticamente cada 5 segundos para mostrar 
+                nuevos mensajes al instante.
               </p>
             </div>
 
             <div class="feature-card">
               <i class="fas fa-trash"></i>
-              <h4>Quick Delete</h4>
+              <h4>Eliminación Rápida</h4>
               <p>
-                Delete your current email and generate a new one whenever you
-                want.
+                Elimina tu correo actual y genera uno nuevo cuando lo desees.
               </p>
             </div>
           </div>
 
-          <h3 id="how-to-use">How to Use Our Service</h3>
+          <h3 id="how-to-use">Cómo Usar Nuestro Servicio</h3>
           <div class="steps-box">
             <ol class="steps-list">
               <li>
                 <span class="step-number">1</span>
                 <div class="step-content">
-                  <h4>Generate Email</h4>
+                  <h4>Generar Correo</h4>
                   <p>
-                    Click the "Generate Temp Email" button to create your
-                    temporary email address.
+                    Haz clic en el botón "Generar Correo Temporal" para crear tu 
+                    dirección de correo desechable.
                   </p>
                 </div>
               </li>
               <li>
                 <span class="step-number">2</span>
                 <div class="step-content">
-                  <h4>Copy Address</h4>
+                  <h4>Copiar Dirección</h4>
                   <p>
-                    Use the copy button to copy your temporary email address to
-                    clipboard.
+                    Usa el botón de copia para guardar tu dirección temporal en el 
+                    portapapeles.
                   </p>
                 </div>
               </li>
               <li>
                 <span class="step-number">3</span>
                 <div class="step-content">
-                  <h4>Check Messages</h4>
+                  <h4>Revisar Mensajes</h4>
                   <p>
-                    Your inbox will automatically refresh to show new messages.
-                    Click any message to view its full content.
+                    Tu bandeja de entrada se actualizará sola. Haz clic en cualquier mensaje 
+                    para ver su contenido completo.
                   </p>
                 </div>
               </li>
               <li>
                 <span class="step-number">4</span>
                 <div class="step-content">
-                  <h4>Delete When Done</h4>
+                  <h4>Eliminar al Terminar</h4>
                   <p>
-                    Click the delete button to remove the current email and
-                    generate a new one if needed.
+                    Haz clic en el botón de eliminar para quitar el correo actual y 
+                    generar uno nuevo si lo necesitas.
                   </p>
                 </div>
               </li>
             </ol>
           </div>
 
-          <h3>Common Use Cases</h3>
+          <h3>Casos de Uso Comunes</h3>
           <div class="use-cases-section">
             <ul class="use-cases">
               <li>
-                <i class="fas fa-angle-right"></i> Sign up for free trials
-                without risking spam
+                <i class="fas fa-angle-right"></i> Registrarse en pruebas gratuitas 
+                sin riesgo de spam.
               </li>
               <li>
-                <i class="fas fa-angle-right"></i> Test website registrations
-                and notifications
+                <i class="fas fa-angle-right"></i> Probar registros y notificaciones 
+                en sitios web.
               </li>
               <li>
-                <i class="fas fa-angle-right"></i> Protect your privacy when
-                using public services
+                <i class="fas fa-angle-right"></i> Proteger tu privacidad al 
+                usar servicios públicos.
               </li>
               <li>
-                <i class="fas fa-angle-right"></i> Avoid marketing emails from
-                online stores
+                <i class="fas fa-angle-right"></i> Evitar correos de marketing de 
+                tiendas en línea.
               </li>
               <li>
-                <i class="fas fa-angle-right"></i> Receive one-time verification
-                codes
+                <i class="fas fa-angle-right"></i> Recibir códigos de verificación 
+                de un solo uso.
               </li>
             </ul>
-          </div>
-
-          <div class="special-thanks">
-            <h3><i class="fas fa-heart"></i> Special Thanks</h3>
-            <p>
-              We would like to express our sincere gratitude to the
-              <a href="https://mail.tm/" target="_blank">Mail.tm</a> team for
-              providing their free API service that makes this project possible.
-              Their commitment to privacy and open accessibility has enabled us
-              to create this temporary email solution.
-            </p>
-          </div>
-
-          <div class="warning-box">
-            <div>
-              <h3><i class="fas fa-exclamation-triangle"></i>Important Note</h3>
-              <p>
-                This service is designed for temporary use only. Do not use
-                temporary email addresses for important accounts, financial
-                services, or long-term communications. Messages are not stored
-                permanently and the email address may be deleted after a period
-                of inactivity.
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -248,36 +223,26 @@
     <footer class="site-footer">
       <div class="footer-container">
         <div id="contact" class="footer-contact">
-          <h3>Contact Us</h3>
+          <h3>Contáctanos</h3>
           <div class="social-links">
-            <a
-              href="https://github.com/AadityaGeek"
-              target="_blank"
-              title="GitHub"
-            >
+            <a 
+              href="https://github.com/fuzailnizamani" 
+              target="_blank" 
+              title="Sígueme en GitHub"
+             >
               <i class="fab fa-github"></i>
-            </a>
-            <a
-              href="https://linkedin.com/in/aadityakr"
-              target="_blank"
-              title="LinkedIn"
-            >
-              <i class="fab fa-linkedin"></i>
-            </a>
-            <a href="mailto:work.aadityakumar@gmail.com" title="Email Us">
-              <i class="fas fa-envelope"></i>
             </a>
           </div>
         </div>
         <div class="footer-info">
           <p>
-            &copy; <span id="currentYear"></span> Temp Mail Generator. All
-            Rights Reserved.
+            &copy; <span id="currentYear"></span> Generador de Correo Temporal. Todos los 
+            derechos reservados.
           </p>
         </div>
       </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script1.js"></script>
   </body>
 </html>
